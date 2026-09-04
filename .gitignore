@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+.pytest_cache/
+AGENTS.md
+raw_images/*
+!raw_images/.gitkeep
+processed_images/*
+!processed_images/.gitkeep
