@@ -35,7 +35,7 @@ O resultado binário destaca a geometria e os contornos da peça de maneira padr
 
 ## Dataset
 
-O dataset sugerido é o [Casting Product Image Data for Quality Inspection](https://www.kaggle.com/datasets/ravirajsinh45/real-life-industrial-dataset-of-casting-product).
+O dataset sugerido é o [Casting Product Image Data for Quality Inspection](https://www.kaggle.com/datasets/ravirajsinh45/real-life-industrial-dataset-of-casting-product). Para este projeto, as imagens também foram disponibilizadas em um [arquivo ZIP no Google Drive](https://drive.google.com/file/d/1K5gNxQ7RXA-nb4boNzPYQTJlRvJyYBD1/view).
 
 Baixe e extraia as imagens. Depois, copie para `raw_images/` as pastas desejadas, por exemplo:
 
@@ -45,7 +45,13 @@ raw_images/
 └── ok_front/
 ```
 
-As imagens não são incluídas no Git por causa do tamanho e das condições de distribuição do dataset.
+As imagens não são incluídas no Git por causa do tamanho, da privacidade da execução e das condições de distribuição do dataset. O `.gitignore` exclui arquivos ZIP e todo o conteúdo de `raw_images/` e `processed_images/`, mantendo somente os arquivos `.gitkeep` que preservam a estrutura de pastas.
+
+## Privacidade das imagens e saída do programa
+
+O programa não abre janelas, não exibe imagens no terminal e não incorpora imagens no código ou no README. Durante a execução normal, o terminal mostra somente a quantidade de sucessos e falhas. As imagens transformadas são gravadas apenas no diretório local `processed_images/`, pois esse salvamento é um requisito da atividade.
+
+Assim, quem receber apenas o repositório terá acesso ao código, mas não às imagens originais nem às processadas. Para compartilhar algum exemplo de resultado, faça isso separadamente e apenas de forma intencional.
 
 ## Instalação
 
