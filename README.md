@@ -6,16 +6,20 @@ Mini-projeto de Machine Learning e Visão Computacional. O sistema prepara, em l
 
 Para cada imagem de entrada, o pipeline aplica:
 
-1. conversão para escala de cinza;
-2. filtro Gaussiano para reduzir ruído;
-3. limiarização automática pelo método de Otsu;
-4. abertura morfológica para remover pequenos ruídos;
-5. fechamento morfológico para preencher pequenas lacunas;
-6. redimensionamento da segmentação e da imagem suavizada para 256 × 256 pixels;
-7. detecção de bordas com Canny na imagem suavizada já padronizada;
-8. gravação da segmentação e das bordas em PNG, separadamente.
+1. leitura em escala de cinza (8 bits, canal único);
+2. redimensionamento para 256 × 256 pixels;
+3. filtro Gaussiano para reduzir ruído;
+4. limiarização automática pelo método de Otsu;
+5. abertura morfológica para remover pequenos ruídos;
+6. fechamento morfológico para preencher pequenas lacunas;
+7. detecção de bordas com Canny na imagem suavizada;
+8. gravação das três saídas em PNG, separadamente.
 
-Cada entrada gera dois resultados binários: uma máscara de segmentação e um mapa de bordas. Eles não são combinados, pois bordas brancas sobre uma máscara branca seriam encobertas. A estrutura de subpastas do dataset é preservada. Arquivos com o mesmo nome-base e extensões diferentes na mesma pasta devem ser renomeados antes da execução para evitar sobrescrita.
+Cada entrada gera **três** resultados de 256 × 256: o cinza padronizado, uma máscara de segmentação e um mapa de bordas. Os dois últimos são binários e não são combinados entre si, pois bordas brancas sobre uma máscara branca seriam encobertas.
+
+A padronização ocorre **antes** dos filtros por dois motivos. Primeiro, os kernels passam a atuar sempre na mesma escala: sem isso, o mesmo `blur_kernel=5` produziria segmentações diferentes em imagens de 512 × 512 e de 300 × 300. Segundo, nenhuma imagem binária é reamostrada no fim, o que serrilharia a máscara e romperia linhas finas de borda.
+
+O cinza padronizado é a saída recomendada para **treinar** o modelo. Binarizar descarta textura e gradiente, que é justamente o sinal usado para diferenciar tipos de irregularidade; segmentação e bordas servem como canal auxiliar e como material de auditoria visual. A estrutura de subpastas do dataset é preservada. Arquivos com o mesmo nome-base e extensões diferentes na mesma pasta devem ser renomeados antes da execução para evitar sobrescrita.
 
 ## Estrutura do projeto
 
@@ -48,7 +52,9 @@ As imagens não são incluídas no Git por causa do tamanho, da privacidade da e
 
 ## Privacidade das imagens e saída do programa
 
-O programa não abre janelas, não exibe imagens no terminal e não incorpora imagens no código ou no README. Durante a execução normal, o terminal mostra somente a quantidade de sucessos e falhas. As imagens transformadas são gravadas apenas no diretório local `processed_images/`, pois esse salvamento é um requisito da atividade.
+O programa não abre janelas, não exibe imagens no terminal e não incorpora imagens no código ou no README. As imagens transformadas são gravadas apenas no diretório local `processed_images/`, pois esse salvamento é um requisito da atividade.
+
+Falhas são registradas **com o nome do arquivo**: em um lote de mais de mil imagens, um aviso anônimo impede localizar o arquivo problemático, e o caminho local não é uma superfície de risco — nenhuma imagem entra no Git.
 
 Assim, quem receber apenas o repositório terá acesso ao código, mas não às imagens originais nem às processadas. Para compartilhar algum exemplo de resultado, faça isso separadamente e apenas de forma intencional.
 
@@ -82,7 +88,7 @@ Com as imagens em `raw_images/`, execute na raiz do projeto:
 python -m src.pipeline
 ```
 
-Os arquivos serão gravados em `processed_images/segmentation/` e `processed_images/edges/`, preservando as subpastas de entrada. O total de sucessos conta imagens de entrada com os dois resultados salvos, não o número de PNGs. Para escolher outras pastas:
+Os arquivos serão gravados em `processed_images/grayscale/`, `processed_images/segmentation/` e `processed_images/edges/`, preservando as subpastas de entrada. O total de sucessos conta imagens de entrada com os três resultados salvos, não o número de PNGs. Para escolher outras pastas:
 
 ```bash
 python -m src.pipeline --input caminho/entrada --output caminho/saida
@@ -108,12 +114,13 @@ Eles verificam formato, dimensões, resultado binário, validação de parâmetr
 
 ### Validação realizada
 
-Foram aprovados 8 testes automatizados e reprocessadas 1.300 imagens reais do dataset, com 0 falhas de leitura, processamento ou gravação. Foram conferidos os 2.600 PNGs gerados: 1.300 de segmentação e 1.300 de bordas, todos binários e com 256 × 256 pixels, sem resultados ausentes.
-Essa verificação confirma o funcionamento do pipeline, mas não substitui a avaliação visual da qualidade dos resultados.
+Foram aprovados 8 testes automatizados, cobrindo formato e dimensão das três saídas, preservação de tons intermediários no cinza, validação de parâmetros, leitura em lote, preservação das subpastas e rastreabilidade de falhas.
 
-Na revisão de duas amostras da versão anterior, a combinação por OR encobria aproximadamente metade dos pixels de Canny. A nova versão mantém as saídas separadas. A segmentação ainda tem limitações com regiões claras e iluminação variável; não se afirma que todos os defeitos são preservados ou detectados.
+O lote completo de 1.300 imagens foi processado na versão anterior, com 0 falhas. **Reexecutar após esta alteração** para confirmar os 3.900 PNGs (1.300 por saída) antes da entrega.
 
-Nesta execução local, os resultados antigos foram preservados em `processed_images/legacy_combined/` para comparação. Essa pasta não é gerada pela versão nova e também fica fora do Git.
+Histórico das revisões: a primeira versão combinava máscara e bordas por OR, o que encobria aproximadamente metade dos pixels de Canny; a segunda separou as saídas; esta terceira corrige a ordem de padronização e passa a gravar o cinza de 256 × 256. A leitura foi restringida a 8 bits em canal único, porque Otsu e Canny não aceitam outros formatos e a leitura anterior deixava um PNG de 16 bits falhar silenciosamente como erro de processamento.
+
+A segmentação ainda tem limitações com regiões claras e iluminação variável; não se afirma que todos os defeitos são preservados ou detectados.
 
 ## Organização em sprints
 
