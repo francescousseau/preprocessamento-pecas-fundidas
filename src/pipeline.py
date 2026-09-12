@@ -1,7 +1,6 @@
 """Pre-processamento em lote para imagens de pecas de fundicao.
 
-Etapas: escala de cinza, padronizacao de tamanho, suavizacao,
-limiarizacao de Otsu, operacoes morfologicas e deteccao de bordas.
+Etapas: escala de cinza, padronizacao de tamanho, suavizacao, limiarizacao de Otsu, operacoes morfologicas e deteccao de bordas.
 """
 
 from __future__ import annotations
