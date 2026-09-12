@@ -41,8 +41,8 @@ class PipelineConfig:
             raise ValueError("Use 0 <= canny_low < canny_high <= 255.")
 
 
-def preprocess_image(image: np.ndarray, config: PipelineConfig) -> np.ndarray:
-    """Executa o pipeline e retorna uma imagem binaria padronizada."""
+def preprocess_image(image: np.ndarray, config: PipelineConfig) -> dict[str, np.ndarray]:
+    """Retorna segmentacao e bordas separadas, binarias e padronizadas."""
     config.validate()
     if image is None or image.size == 0:
         raise ValueError("A imagem recebida esta vazia.")
@@ -69,14 +69,23 @@ def preprocess_image(image: np.ndarray, config: PipelineConfig) -> np.ndarray:
     opened = cv2.morphologyEx(thresholded, cv2.MORPH_OPEN, kernel)
     refined = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, kernel)
 
-    edges = cv2.Canny(blurred, config.canny_low, config.canny_high)
-    combined = cv2.bitwise_or(refined, edges)
-
-    return cv2.resize(
-        combined,
+    segmentation = cv2.resize(
+        refined,
         (config.width, config.height),
         interpolation=cv2.INTER_NEAREST,
     )
+    # Canny na resolucao final evita perder linhas finas ao reduzir uma
+    # imagem de bordas ja binarizada. A mascara nao encobre essas linhas.
+    interpolation = (
+        cv2.INTER_AREA
+        if config.width <= gray.shape[1] and config.height <= gray.shape[0]
+        else cv2.INTER_LINEAR
+    )
+    standardized = cv2.resize(
+        blurred, (config.width, config.height), interpolation=interpolation
+    )
+    edges = cv2.Canny(standardized, config.canny_low, config.canny_high)
+    return {"segmentation": segmentation, "edges": edges}
 
 
 def list_images(input_dir: Path) -> list[Path]:
@@ -92,6 +101,7 @@ def process_batch(
     input_dir: Path, output_dir: Path, config: PipelineConfig
 ) -> tuple[int, int]:
     """Processa todas as imagens; retorna quantidades de sucesso e falha."""
+    config.validate()
     if not input_dir.exists() or not input_dir.is_dir():
         raise FileNotFoundError(f"Diretorio de entrada nao encontrado: {input_dir}")
 
@@ -116,11 +126,12 @@ def process_batch(
         try:
             result = preprocess_image(image, config)
             relative = image_path.relative_to(input_dir).with_suffix(".png")
-            destination = output_dir / relative
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            if not cv2.imwrite(str(destination), result):
-                raise OSError(f"Nao foi possivel salvar {destination}")
-            # Os nomes e o conteudo das imagens so aparecem com log de depuracao.
+            for stage, output in result.items():
+                destination = output_dir / stage / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                if not cv2.imwrite(str(destination), output):
+                    raise OSError(f"Nao foi possivel salvar {destination}")
+            # Os caminhos das imagens so aparecem com log de depuracao.
             # A execucao normal informa apenas as quantidades finais.
             LOGGER.debug("Processada: %s -> %s", image_path, destination)
             successes += 1

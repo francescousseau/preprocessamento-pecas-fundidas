@@ -12,7 +12,7 @@ Mostre a estrutura das pastas, sem abrir ou exibir as imagens. No terminal, exec
 python -m src.pipeline
 ```
 
-Mostre a mensagem com a quantidade de imagens processadas. Explique que os arquivos são salvos localmente em `processed_images/`, têm 256 × 256 pixels e preservam as subpastas do dataset. Para demonstrar a padronização sem exibir imagens, execute os testes e explique a verificação de dimensões e formato binário.
+Mostre a mensagem com a quantidade de imagens processadas. Explique que cada entrada gera dois arquivos de 256 × 256 pixels: a segmentação em `processed_images/segmentation/` e as bordas em `processed_images/edges/`. As subpastas do dataset são preservadas. As saídas são separadas para evitar que a máscara encubra bordas. Para demonstrar a padronização sem exibir imagens, execute os testes e explique a verificação de dimensões e formato binário.
 
 ## 1:30–2:20 — Como executar
 
