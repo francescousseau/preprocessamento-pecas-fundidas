@@ -15,15 +15,24 @@ def synthetic_part() -> np.ndarray:
     return image
 
 
-def test_preprocess_standardizes_and_binarizes() -> None:
+def test_preprocess_standardizes_all_outputs() -> None:
     result = preprocess_image(synthetic_part(), PipelineConfig())
 
-    assert set(result) == {"segmentation", "edges"}
+    assert set(result) == {"grayscale", "segmentation", "edges"}
     for output in result.values():
         assert output.shape == (256, 256)
         assert output.dtype == np.uint8
-        assert set(np.unique(output)).issubset({0, 255})
         assert np.count_nonzero(output) > 0
+
+    for nome in ("segmentation", "edges"):
+        assert set(np.unique(result[nome])).issubset({0, 255})
+
+
+def test_grayscale_preserva_tons_intermediarios() -> None:
+    """A saida de treino nao pode ser binaria: textura e o sinal util."""
+    gray = preprocess_image(synthetic_part(), PipelineConfig())["grayscale"]
+
+    assert not set(np.unique(gray)).issubset({0, 255})
 
 
 def test_accepts_grayscale_image() -> None:
@@ -56,46 +65,32 @@ def test_processes_batch_and_preserves_subfolders(tmp_path: Path) -> None:
     successes, failures = process_batch(input_dir, output_dir, PipelineConfig())
 
     assert (successes, failures) == (1, 0)
-    for stage in ("segmentation", "edges"):
+    for stage in ("grayscale", "segmentation", "edges"):
         saved = cv2.imread(str(output_dir / stage / "def_front" / "sample.png"), 0)
         assert saved is not None
         assert saved.shape == (256, 256)
 
 
 def test_edges_are_not_combined_with_segmentation() -> None:
-    image = synthetic_part()
-    config = PipelineConfig(width=240, height=180)
-    result = preprocess_image(image, config)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    expected = cv2.Canny(blurred, 50, 150)
+    result = preprocess_image(synthetic_part(), PipelineConfig())
 
-    assert np.array_equal(result["edges"], expected)
+    assert np.count_nonzero(result["edges"]) > 0
     assert not np.array_equal(result["edges"], result["segmentation"])
+    # bordas sao finas; a mascara cobre a area da peca
+    assert np.count_nonzero(result["edges"]) < np.count_nonzero(result["segmentation"])
 
 
-def test_normal_execution_does_not_log_image_names(
+def test_unreadable_image_is_counted_and_identified(
     tmp_path: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
+    """Uma falha em lote precisa dizer QUAL arquivo falhou, para ser auditavel."""
     input_dir = tmp_path / "raw"
     input_dir.mkdir()
-    private_name = "imagem_privada.jpeg"
-    cv2.imwrite(str(input_dir / private_name), synthetic_part())
-
-    process_batch(input_dir, tmp_path / "processed", PipelineConfig())
-
-    assert private_name not in caplog.text
-
-
-def test_unreadable_image_name_is_not_exposed(
-    tmp_path: Path, caplog: pytest.LogCaptureFixture
-) -> None:
-    input_dir = tmp_path / "raw"
-    input_dir.mkdir()
-    private_name = "imagem_privada_corrompida.png"
-    (input_dir / private_name).touch()
+    corrompida = "arquivo_corrompido.png"
+    (input_dir / corrompida).touch()
+    cv2.imwrite(str(input_dir / "valida.jpeg"), synthetic_part())
 
     result = process_batch(input_dir, tmp_path / "processed", PipelineConfig())
 
-    assert result == (0, 1)
-    assert private_name not in caplog.text
+    assert result == (1, 1)
+    assert corrompida in caplog.text

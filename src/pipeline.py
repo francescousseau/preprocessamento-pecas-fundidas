@@ -1,7 +1,7 @@
 """Pre-processamento em lote para imagens de pecas de fundicao.
 
-Etapas: escala de cinza, suavizacao, limiarizacao de Otsu,
-operacoes morfologicas, deteccao de bordas e redimensionamento.
+Etapas: escala de cinza, padronizacao de tamanho, suavizacao,
+limiarizacao de Otsu, operacoes morfologicas e deteccao de bordas.
 """
 
 from __future__ import annotations
@@ -42,20 +42,28 @@ class PipelineConfig:
 
 
 def preprocess_image(image: np.ndarray, config: PipelineConfig) -> dict[str, np.ndarray]:
-    """Retorna segmentacao e bordas separadas, binarias e padronizadas."""
+    """Retorna cinza padronizado, segmentacao e bordas, no tamanho configurado."""
     config.validate()
     if image is None or image.size == 0:
         raise ValueError("A imagem recebida esta vazia.")
 
     if image.ndim == 2:
-        gray = image.copy()
-    elif image.ndim == 3 and image.shape[2] == 3:
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    elif image.ndim == 3 and image.shape[2] == 4:
-        gray = cv2.cvtColor(image, cv2.COLOR_BGRA2GRAY)
+        gray = image
+    elif image.ndim == 3 and image.shape[2] in (3, 4):
+        codigo = cv2.COLOR_BGR2GRAY if image.shape[2] == 3 else cv2.COLOR_BGRA2GRAY
+        gray = cv2.cvtColor(image, codigo)
     else:
         raise ValueError(f"Formato de imagem nao suportado: {image.shape}")
 
+    # Padronizar antes dos filtros: entradas de 512x512 e 300x300 passam a
+    # responder igualmente aos mesmos kernels, e nenhuma imagem binaria e
+    # reamostrada no fim (o que serrilharia a mascara e quebraria bordas).
+    interpolacao = (
+        cv2.INTER_AREA
+        if config.width <= gray.shape[1] and config.height <= gray.shape[0]
+        else cv2.INTER_LINEAR
+    )
+    gray = cv2.resize(gray, (config.width, config.height), interpolation=interpolacao)
     blurred = cv2.GaussianBlur(
         gray, (config.blur_kernel, config.blur_kernel), sigmaX=0
     )
@@ -68,24 +76,13 @@ def preprocess_image(image: np.ndarray, config: PipelineConfig) -> dict[str, np.
     )
     opened = cv2.morphologyEx(thresholded, cv2.MORPH_OPEN, kernel)
     refined = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, kernel)
+    edges = cv2.Canny(blurred, config.canny_low, config.canny_high)
 
-    segmentation = cv2.resize(
-        refined,
-        (config.width, config.height),
-        interpolation=cv2.INTER_NEAREST,
-    )
-    # Canny na resolucao final evita perder linhas finas ao reduzir uma
-    # imagem de bordas ja binarizada. A mascara nao encobre essas linhas.
-    interpolation = (
-        cv2.INTER_AREA
-        if config.width <= gray.shape[1] and config.height <= gray.shape[0]
-        else cv2.INTER_LINEAR
-    )
-    standardized = cv2.resize(
-        blurred, (config.width, config.height), interpolation=interpolation
-    )
-    edges = cv2.Canny(standardized, config.canny_low, config.canny_high)
-    return {"segmentation": segmentation, "edges": edges}
+    # "grayscale" e a entrada recomendada para o treinamento do modelo:
+    # binarizar descarta textura e gradiente, que e o sinal usado para
+    # distinguir tipos de defeito. Segmentacao e bordas seguem separadas,
+    # como canal auxiliar e material de auditoria visual.
+    return {"grayscale": gray, "segmentation": refined, "edges": edges}
 
 
 def list_images(input_dir: Path) -> list[Path]:
@@ -116,10 +113,12 @@ def process_batch(
     failures = 0
 
     for image_path in images:
-        image = cv2.imread(str(image_path), cv2.IMREAD_UNCHANGED)
+        # IMREAD_GRAYSCALE garante 8 bits em canal unico: Otsu e Canny so
+        # aceitam esse formato, e IMREAD_UNCHANGED deixaria passar PNG de
+        # 16 bits, que falharia em silencio dentro do except abaixo.
+        image = cv2.imread(str(image_path), cv2.IMREAD_GRAYSCALE)
         if image is None:
-            LOGGER.warning("Um arquivo de imagem ilegivel foi ignorado.")
-            LOGGER.debug("Arquivo ilegivel: %s", image_path)
+            LOGGER.warning("Arquivo ilegivel ignorado: %s", image_path)
             failures += 1
             continue
 
@@ -131,13 +130,10 @@ def process_batch(
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 if not cv2.imwrite(str(destination), output):
                     raise OSError(f"Nao foi possivel salvar {destination}")
-            # Os caminhos das imagens so aparecem com log de depuracao.
-            # A execucao normal informa apenas as quantidades finais.
             LOGGER.debug("Processada: %s -> %s", image_path, destination)
             successes += 1
         except (ValueError, cv2.error, OSError) as error:
-            LOGGER.warning("Uma imagem nao pode ser processada ou salva.")
-            LOGGER.debug("Falha em %s: %s", image_path, error)
+            LOGGER.warning("Falha ao processar %s: %s", image_path, error)
             failures += 1
 
     return successes, failures
