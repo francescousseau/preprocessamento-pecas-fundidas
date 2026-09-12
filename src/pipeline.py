@@ -108,7 +108,8 @@ def process_batch(
     for image_path in images:
         image = cv2.imread(str(image_path), cv2.IMREAD_UNCHANGED)
         if image is None:
-            LOGGER.warning("Ignorando arquivo ilegivel: %s", image_path)
+            LOGGER.warning("Um arquivo de imagem ilegivel foi ignorado.")
+            LOGGER.debug("Arquivo ilegivel: %s", image_path)
             failures += 1
             continue
 
@@ -124,7 +125,8 @@ def process_batch(
             LOGGER.debug("Processada: %s -> %s", image_path, destination)
             successes += 1
         except (ValueError, cv2.error, OSError) as error:
-            LOGGER.warning("Falha em %s: %s", image_path, error)
+            LOGGER.warning("Uma imagem nao pode ser processada ou salva.")
+            LOGGER.debug("Falha em %s: %s", image_path, error)
             failures += 1
 
     return successes, failures

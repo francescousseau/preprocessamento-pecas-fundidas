@@ -109,6 +109,8 @@ Eles verificam formato, dimensões, resultado binário, validação de parâmetr
 
 ## Organização em sprints
 
+O acompanhamento detalhado, incluindo as pendências da entrega, está em [PLANEJAMENTO.md](PLANEJAMENTO.md).
+
 - **Sprint 1 — Configuração:** repositório Git, branch `development`, ambiente virtual e seleção do dataset.
 - **Sprint 2 — Dados:** pastas de entrada e saída e leitura recursiva em lote.
 - **Sprint 3 — Pipeline base:** escala de cinza e filtro Gaussiano.
@@ -133,7 +135,7 @@ Como iluminação, contraste e escala variam, os parâmetros ideais podem mudar 
 
 Desenvolvido para fins acadêmicos. Preencha antes da entrega:
 
-- **Aluno(a):** SEU NOME
-- **Turma:** SUA TURMA
-- **Repositório:** LINK DO GITHUB
-- **Vídeo:** LINK DO GOOGLE DRIVE
+- **Aluno(a):** Francesco Cristiano Cousseau
+- **Turma:** Machine Learning e Visão Computacional T2
+- **Repositório:** https://github.com/francescousseau/preprocessamento-pecas-fundidas
+
