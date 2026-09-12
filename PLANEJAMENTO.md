@@ -24,7 +24,7 @@
 
 - [x] Aplicar limiarização automática de Otsu.
 - [x] Detectar bordas com Canny.
-- [x] Combinar a segmentação refinada com as bordas.
+- [x] Salvar segmentação e bordas separadamente para não encobrir contornos.
 
 ## Sprint 5 — Morfologia e padronização
 
@@ -49,6 +49,8 @@
 
 ## Critério de conclusão
 
-O código e os testes sintéticos estão prontos, mas a entrega só estará concluída após o processamento real, a publicação e a gravação. Não é necessário nem permitido afirmar que o sistema classifica defeitos: ele apenas prepara imagens.
+O lote real foi reprocessado após separar segmentação e bordas: 1.300 entradas, 2.600 PNGs válidos, 0 falhas e 8 testes aprovados. A revisão inicial de duas amostras revelou limitações de iluminação e encobrimento de bordas na versão combinada. A nova versão elimina essa combinação, mas ainda exige avaliação visual mais ampla; não é necessário nem permitido afirmar que o sistema classifica defeitos: ele apenas prepara imagens.
+
+A entrega também depende da integração das últimas alterações no GitHub, da documentação final e da gravação.
 
 Prazo informado no enunciado: **14/09/2026 às 22h**. Este acompanhamento registra o estado real do projeto; não representa um histórico de seis sprints executadas em datas diferentes.
