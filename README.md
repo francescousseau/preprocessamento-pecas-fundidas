@@ -107,6 +107,11 @@ pytest -q
 
 Eles verificam formato, dimensões, resultado binário, validação de parâmetros, leitura em lote e preservação das subpastas.
 
+### Validação realizada
+
+Foram aprovados 7 testes automatizados e processadas 1.300 imagens reais do dataset, com 0 falhas de leitura, processamento ou gravação.
+Essa verificação confirma o funcionamento do pipeline, mas não substitui a avaliação visual da qualidade dos resultados.
+
 ## Organização em sprints
 
 O acompanhamento detalhado, incluindo as pendências da entrega, está em [PLANEJAMENTO.md](PLANEJAMENTO.md).

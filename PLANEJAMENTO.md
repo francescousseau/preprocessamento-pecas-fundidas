@@ -6,7 +6,7 @@
 - [x] Criar as branches `main` e `development`.
 - [x] Criar o ambiente virtual e instalar as dependências.
 - [x] Identificar o dataset e o arquivo ZIP fornecido no Google Drive.
-- [ ] Baixar e extrair o dataset em `raw_images/`.
+- [x] Baixar e extrair o dataset em `raw_images/`.
 
 ## Sprint 2 — Estruturação dos dados e leitura
 
