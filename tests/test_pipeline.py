@@ -58,3 +58,29 @@ def test_processes_batch_and_preserves_subfolders(tmp_path: Path) -> None:
     assert saved is not None
     assert saved.shape == (256, 256)
 
+
+def test_normal_execution_does_not_log_image_names(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    input_dir = tmp_path / "raw"
+    input_dir.mkdir()
+    private_name = "imagem_privada.jpeg"
+    cv2.imwrite(str(input_dir / private_name), synthetic_part())
+
+    process_batch(input_dir, tmp_path / "processed", PipelineConfig())
+
+    assert private_name not in caplog.text
+
+
+def test_unreadable_image_name_is_not_exposed(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    input_dir = tmp_path / "raw"
+    input_dir.mkdir()
+    private_name = "imagem_privada_corrompida.png"
+    (input_dir / private_name).touch()
+
+    result = process_batch(input_dir, tmp_path / "processed", PipelineConfig())
+
+    assert result == (0, 1)
+    assert private_name not in caplog.text

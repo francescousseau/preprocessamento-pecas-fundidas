@@ -35,7 +35,7 @@ O resultado binário destaca a geometria e os contornos da peça de maneira padr
 
 ## Dataset
 
-O dataset sugerido é o [Casting Product Image Data for Quality Inspection](https://www.kaggle.com/datasets/ravirajsinh45/real-life-industrial-dataset-of-casting-product).
+O dataset sugerido é o [Casting Product Image Data for Quality Inspection](https://www.kaggle.com/datasets/ravirajsinh45/real-life-industrial-dataset-of-casting-product). Para este projeto, as imagens também foram disponibilizadas em um [arquivo ZIP no Google Drive](https://drive.google.com/file/d/1K5gNxQ7RXA-nb4boNzPYQTJlRvJyYBD1/view).
 
 Baixe e extraia as imagens. Depois, copie para `raw_images/` as pastas desejadas, por exemplo:
 
@@ -45,7 +45,13 @@ raw_images/
 └── ok_front/
 ```
 
-As imagens não são incluídas no Git por causa do tamanho e das condições de distribuição do dataset.
+As imagens não são incluídas no Git por causa do tamanho, da privacidade da execução e das condições de distribuição do dataset. O `.gitignore` exclui arquivos ZIP e todo o conteúdo de `raw_images/` e `processed_images/`, mantendo somente os arquivos `.gitkeep` que preservam a estrutura de pastas.
+
+## Privacidade das imagens e saída do programa
+
+O programa não abre janelas, não exibe imagens no terminal e não incorpora imagens no código ou no README. Durante a execução normal, o terminal mostra somente a quantidade de sucessos e falhas. As imagens transformadas são gravadas apenas no diretório local `processed_images/`, pois esse salvamento é um requisito da atividade.
+
+Assim, quem receber apenas o repositório terá acesso ao código, mas não às imagens originais nem às processadas. Para compartilhar algum exemplo de resultado, faça isso separadamente e apenas de forma intencional.
 
 ## Instalação
 
@@ -101,7 +107,14 @@ pytest -q
 
 Eles verificam formato, dimensões, resultado binário, validação de parâmetros, leitura em lote e preservação das subpastas.
 
+### Validação realizada
+
+Foram aprovados 7 testes automatizados e processadas 1.300 imagens reais do dataset, com 0 falhas de leitura, processamento ou gravação.
+Essa verificação confirma o funcionamento do pipeline, mas não substitui a avaliação visual da qualidade dos resultados.
+
 ## Organização em sprints
+
+O acompanhamento detalhado, incluindo as pendências da entrega, está em [PLANEJAMENTO.md](PLANEJAMENTO.md).
 
 - **Sprint 1 — Configuração:** repositório Git, branch `development`, ambiente virtual e seleção do dataset.
 - **Sprint 2 — Dados:** pastas de entrada e saída e leitura recursiva em lote.
@@ -127,7 +140,7 @@ Como iluminação, contraste e escala variam, os parâmetros ideais podem mudar 
 
 Desenvolvido para fins acadêmicos. Preencha antes da entrega:
 
-- **Aluno(a):** SEU NOME
-- **Turma:** SUA TURMA
-- **Repositório:** LINK DO GITHUB
-- **Vídeo:** LINK DO GOOGLE DRIVE
+- **Aluno(a):** Francesco Cristiano Cousseau
+- **Turma:** Machine Learning e Visão Computacional T2
+- **Repositório:** https://github.com/francescousseau/preprocessamento-pecas-fundidas
+

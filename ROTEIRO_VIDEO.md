@@ -6,13 +6,13 @@
 
 ## 0:30–1:30 — Demonstração
 
-Mostre uma imagem em `raw_images/`. No terminal, execute:
+Mostre a estrutura das pastas, sem abrir ou exibir as imagens. No terminal, execute:
 
 ```bash
 python -m src.pipeline
 ```
 
-Mostre a mensagem com a quantidade de imagens processadas e abra o resultado correspondente em `processed_images/`. Explique que a saída é binária, tem 256 × 256 pixels e preserva as subpastas do dataset.
+Mostre a mensagem com a quantidade de imagens processadas. Explique que os arquivos são salvos localmente em `processed_images/`, têm 256 × 256 pixels e preservam as subpastas do dataset. Para demonstrar a padronização sem exibir imagens, execute os testes e explique a verificação de dimensões e formato binário.
 
 ## 1:30–2:20 — Como executar
 
