@@ -1,5 +1,9 @@
 # Pré-processamento de imagens para inspeção de peças fundidas
 
+[![Python](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.11-green)](https://opencv.org)
+
+Mini-projeto de Machine Learning e Visão Computacional...
 Mini-projeto de Machine Learning e Visão Computacional. O sistema prepara, em lote, imagens de peças metálicas para um futuro modelo de classificação de qualidade. Ele **não classifica defeitos**: sua função é reduzir ruído, segmentar a peça e evidenciar contornos e possíveis irregularidades.
 
 ## Objetivo e fluxo do sistema
@@ -38,7 +42,9 @@ O cinza padronizado é a saída recomendada para **treinar** o modelo. Binarizar
 
 ## Dataset
 
-O dataset sugerido é o [Casting Product Image Data for Quality Inspection](https://www.kaggle.com/datasets/ravirajsinh45/real-life-industrial-dataset-of-casting-product). Para este projeto, as imagens também foram disponibilizadas em um [arquivo ZIP no Google Drive](https://drive.google.com/file/d/1K5gNxQ7RXA-nb4boNzPYQTJlRvJyYBD1/view).
+Dataset: Dabhi, R. (2020). *Casting Product Image Data for Quality Inspection*. Kaggle.
+Licenciado sob [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/).
+As imagens, originais ou processadas, não são redistribuídas neste repositório. O dataset sugerido é o [Casting Product Image Data for Quality Inspection](https://www.kaggle.com/datasets/ravirajsinh45/real-life-industrial-dataset-of-casting-product). Para este projeto, as imagens também foram disponibilizadas em um [arquivo ZIP no Google Drive](https://drive.google.com/file/d/1K5gNxQ7RXA-nb4boNzPYQTJlRvJyYBD1/view).
 
 Baixe e extraia as imagens. Depois, copie para `raw_images/` as pastas desejadas, por exemplo:
 
