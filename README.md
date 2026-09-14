@@ -2,7 +2,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org)
 [![OpenCV](https://img.shields.io/badge/OpenCV-4.11-green)](https://opencv.org)
-[![Licença](https://img.shields.io/badge/licença-MIT-green)](license)
+[![Licença](https://img.shields.io/badge/licença-MIT-green)](LICENSE)
 
 Mini-projeto de Machine Learning e Visão Computacional. O sistema prepara, em lote, imagens de peças metálicas fundidas para um futuro modelo de classificação de qualidade. Ele **não classifica defeitos**: reduz ruído, segmenta a peça e evidencia contornos e possíveis irregularidades, entregando dados padronizados para a etapa de modelagem.
 
@@ -186,7 +186,7 @@ O programa não abre janelas, não exibe imagens no terminal e não incorpora im
 
 ## Licença
 
-O código deste projeto está sob a licença [MIT](license). O arquivo contém o texto integral da licença e o aviso de copyright de 2026 de Francesco Cristiano Cousseau. Texto de referência: [Open Source Initiative](https://opensource.org/license/mit).
+O código deste projeto está sob a licença [MIT](LICENSE). O arquivo contém o texto integral da licença e o aviso de copyright de 2026 de Francesco Cristiano Cousseau. Texto de referência: [Open Source Initiative](https://opensource.org/license/mit).
 
 As imagens têm licença própria, indicada pelo autor no [Kaggle](https://www.kaggle.com/datasets/ravirajsinh45/real-life-industrial-dataset-of-casting-product) como CC BY-NC-ND 4.0. Uma licença do código não altera os termos dos dados. Nenhuma imagem original ou processada é incluída no repositório.
 
