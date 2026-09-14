@@ -2,9 +2,9 @@
 
 [![Python](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org)
 [![OpenCV](https://img.shields.io/badge/OpenCV-4.11-green)](https://opencv.org)
+[![Licença](https://img.shields.io/badge/licença-MIT-green)](license)
 
-Mini-projeto de Machine Learning e Visão Computacional...
-Mini-projeto de Machine Learning e Visão Computacional. O sistema prepara, em lote, imagens de peças metálicas para um futuro modelo de classificação de qualidade. Ele **não classifica defeitos**: sua função é reduzir ruído, segmentar a peça e evidenciar contornos e possíveis irregularidades.
+Mini-projeto de Machine Learning e Visão Computacional. O sistema prepara, em lote, imagens de peças metálicas fundidas para um futuro modelo de classificação de qualidade. Ele **não classifica defeitos**: reduz ruído, segmenta a peça e evidencia contornos e possíveis irregularidades, entregando dados padronizados para a etapa de modelagem.
 
 ## Objetivo e fluxo do sistema
 
@@ -16,14 +16,18 @@ Para cada imagem de entrada, o pipeline aplica:
 4. limiarização automática pelo método de Otsu;
 5. abertura morfológica para remover pequenos ruídos;
 6. fechamento morfológico para preencher pequenas lacunas;
-7. detecção de bordas com Canny na imagem suavizada;
+7. detecção de bordas com Canny sobre a imagem suavizada;
 8. gravação das três saídas em PNG, separadamente.
 
-Cada entrada gera **três** resultados de 256 × 256: o cinza padronizado, uma máscara de segmentação e um mapa de bordas. Os dois últimos são binários e não são combinados entre si, pois bordas brancas sobre uma máscara branca seriam encobertas.
+Cada entrada gera **três** resultados de 256 × 256 pixels:
 
-A padronização ocorre **antes** dos filtros por dois motivos. Primeiro, os kernels passam a atuar sempre na mesma escala: sem isso, o mesmo `blur_kernel=5` produziria segmentações diferentes em imagens de 512 × 512 e de 300 × 300. Segundo, nenhuma imagem binária é reamostrada no fim, o que serrilharia a máscara e romperia linhas finas de borda.
+| Saída | Conteúdo | Uso previsto |
+|---|---|---|
+| `grayscale/` | imagem em tons de cinza, padronizada, sem suavização na saída | candidata a entrada de treino, preservando tons intermediários |
+| `segmentation/` | máscara binária de intensidade (Otsu + morfologia) | análise auxiliar de regiões e forma; não garante separar peça e fundo |
+| `edges/` | mapa binário de bordas (Canny) | inspeção de contornos e ranhuras, auditoria visual |
 
-O cinza padronizado é a saída recomendada para **treinar** o modelo. Binarizar descarta textura e gradiente, que é justamente o sinal usado para diferenciar tipos de irregularidade; segmentação e bordas servem como canal auxiliar e como material de auditoria visual. A estrutura de subpastas do dataset é preservada. Arquivos com o mesmo nome-base e extensões diferentes na mesma pasta devem ser renomeados antes da execução para evitar sobrescrita.
+A estrutura de subpastas do dataset é preservada na saída, mantendo a informação de classe de cada imagem.
 
 ## Estrutura do projeto
 
@@ -35,40 +39,37 @@ O cinza padronizado é a saída recomendada para **treinar** o modelo. Binarizar
 │   └── pipeline.py       # pipeline e interface de linha de comando
 ├── tests/
 │   └── test_pipeline.py  # testes automatizados
-├── pyproject.toml         # configuração dos testes
+├── pyproject.toml        # configuração dos testes
 ├── requirements.txt
+├── PLANEJAMENTO.md       # sprints e acompanhamento
+├── license              # texto integral da licença MIT
 └── README.md
 ```
 
 ## Dataset
 
-Dataset: Dabhi, R. (2020). *Casting Product Image Data for Quality Inspection*. Kaggle.
-Licenciado sob [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/).
-As imagens, originais ou processadas, não são redistribuídas neste repositório. O dataset sugerido é o [Casting Product Image Data for Quality Inspection](https://www.kaggle.com/datasets/ravirajsinh45/real-life-industrial-dataset-of-casting-product). Para este projeto, as imagens também foram disponibilizadas em um [arquivo ZIP no Google Drive](https://drive.google.com/file/d/1K5gNxQ7RXA-nb4boNzPYQTJlRvJyYBD1/view).
+Dabhi, R. (2020). *Casting Product Image Data for Quality Inspection*. [Kaggle](https://www.kaggle.com/datasets/ravirajsinh45/real-life-industrial-dataset-of-casting-product). Licenciado sob [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/).
 
-Baixe e extraia as imagens. Depois, copie para `raw_images/` as pastas desejadas, por exemplo:
+Segundo a descrição do dataset no Kaggle, são imagens da vista superior de rotores de bomba submersível, capturadas sob iluminação controlada. Foi utilizada a variante `casting_512x512`, com 1.300 imagens **sem augmentation** (781 `def_front` e 519 `ok_front`), e não o conjunto de 300 × 300 pixels, que já contém aumento de dados. Na futura modelagem, a separação por imagem original deve ocorrer antes de gerar variações para treino, evitando que imagens relacionadas apareçam em treino e teste. Este pipeline não realiza essa separação nem aumento de dados.
+
+Para este projeto, as imagens também foram disponibilizadas em um [arquivo ZIP no Google Drive](https://drive.google.com/file/d/1K5gNxQ7RXA-nb4boNzPYQTJlRvJyYBD1/view).
+
+Baixe, extraia e organize as pastas em `raw_images/`:
 
 ```text
 raw_images/
-├── def_front/
-└── ok_front/
+└── casting_512x512/
+    ├── def_front/    # 781 imagens
+    └── ok_front/     # 519 imagens
 ```
 
-As imagens não são incluídas no Git por causa do tamanho, da privacidade da execução e das condições de distribuição do dataset. O `.gitignore` exclui arquivos ZIP e todo o conteúdo de `raw_images/` e `processed_images/`, mantendo somente os arquivos `.gitkeep` que preservam a estrutura de pastas.
-
-## Privacidade das imagens e saída do programa
-
-O programa não abre janelas, não exibe imagens no terminal e não incorpora imagens no código ou no README. As imagens transformadas são gravadas apenas no diretório local `processed_images/`, pois esse salvamento é um requisito da atividade.
-
-Falhas são registradas **com o nome do arquivo**: em um lote de mais de mil imagens, um aviso anônimo impede localizar o arquivo problemático, e o caminho local não é uma superfície de risco — nenhuma imagem entra no Git.
-
-Assim, quem receber apenas o repositório terá acesso ao código, mas não às imagens originais nem às processadas. Para compartilhar algum exemplo de resultado, faça isso separadamente e apenas de forma intencional.
+Nenhuma imagem, original ou processada, é versionada neste repositório — por causa do tamanho, das condições de distribuição do dataset e da privacidade da execução local. O `.gitignore` exclui arquivos ZIP e todo o conteúdo de `raw_images/` e `processed_images/`, mantendo apenas os arquivos `.gitkeep` que preservam a estrutura de pastas.
 
 ## Instalação
 
 Requer Python 3.9 ou mais recente.
 
-### macOS ou Linux
+**macOS ou Linux**
 
 ```bash
 python3 -m venv .venv
@@ -77,7 +78,7 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Windows (PowerShell)
+**Windows (PowerShell)**
 
 ```powershell
 py -m venv .venv
@@ -94,81 +95,101 @@ Com as imagens em `raw_images/`, execute na raiz do projeto:
 python -m src.pipeline
 ```
 
-Os arquivos serão gravados em `processed_images/grayscale/`, `processed_images/segmentation/` e `processed_images/edges/`, preservando as subpastas de entrada. O total de sucessos conta imagens de entrada com os três resultados salvos, não o número de PNGs. Para escolher outras pastas:
+No macOS ou Linux, também é possível executar sem ativar o ambiente virtual:
+
+```bash
+.venv/bin/python -m src.pipeline
+```
+
+Os resultados são gravados em `processed_images/grayscale/`, `processed_images/segmentation/` e `processed_images/edges/`, preservando as subpastas de entrada. O total de sucessos informado ao final conta imagens de entrada com os três resultados salvos, não o número de arquivos gerados.
+
+Para escolher outras pastas:
 
 ```bash
 python -m src.pipeline --input caminho/entrada --output caminho/saida
 ```
 
-Também é possível ajustar os parâmetros:
+Para ajustar os parâmetros:
 
 ```bash
-python -m src.pipeline --width 256 --height 256 --blur-kernel 5 --morph-kernel 3 --canny-low 50 --canny-high 150
+python -m src.pipeline --width 256 --height 256 --blur-kernel 5 \
+                       --morph-kernel 3 --canny-low 50 --canny-high 150
 ```
 
-O kernel do filtro Gaussiano deve ser um número ímpar positivo. Os limiares do Canny devem respeitar `0 <= baixo < alto <= 255`.
+O kernel do filtro Gaussiano deve ser ímpar e positivo, e os limiares do Canny devem respeitar `0 <= baixo < alto <= 255`. Arquivos com o mesmo nome-base e extensões diferentes na mesma pasta devem ser renomeados antes da execução, sob risco de sobrescrita.
 
-## Testes
+## Testes e validação
 
-Os testes usam imagens sintéticas, portanto não exigem o dataset:
+Os testes usam imagens sintéticas e não exigem o dataset:
 
 ```bash
 pytest -q
 ```
 
-Eles verificam formato, dimensões, resultado binário, validação de parâmetros, leitura em lote e preservação das subpastas.
+São 8 testes, cobrindo dimensão e formato das três saídas, preservação de tons intermediários no cinza, validação dos parâmetros, leitura em lote, replicação das subpastas e rastreabilidade de falhas.
 
-### Validação realizada
+### Execução sobre o dataset
 
-Foram aprovados 8 testes automatizados, cobrindo formato e dimensão das três saídas, preservação de tons intermediários no cinza, validação de parâmetros, leitura em lote, preservação das subpastas e rastreabilidade de falhas.
+Na validação técnica de **14/09/2026**, os **8 testes foram aprovados** e foram processadas **1.300 imagens**, com **0 falhas de leitura, processamento ou gravação**, gerando **3.900 arquivos PNG**:
 
-O lote completo de 1.300 imagens foi processado na versão anterior, com 0 falhas. **Reexecutar após esta alteração** para confirmar os 3.900 PNGs (1.300 por saída) antes da entrega.
+- 1.300 imagens em `grayscale/`;
+- 1.300 máscaras em `segmentation/`;
+- 1.300 mapas de bordas em `edges/`.
 
-Histórico das revisões: a primeira versão combinava máscara e bordas por OR, o que encobria aproximadamente metade dos pixels de Canny; a segunda separou as saídas; esta terceira corrige a ordem de padronização e passa a gravar o cinza de 256 × 256. A leitura foi restringida a 8 bits em canal único, porque Otsu e Canny não aceitam outros formatos e a leitura anterior deixava um PNG de 16 bits falhar silenciosamente como erro de processamento.
+A conferência verificou todas as saídas: 256 × 256 pixels, canal único, tipo `uint8` e nenhum arquivo ausente ou inválido. Segmentações e bordas são binárias; todas as imagens em cinza preservam tons intermediários. Nenhum mapa de bordas está vazio. Foram recalculadas 10 entradas, cujas três saídas coincidiram exatamente com os PNGs gravados.
 
-A segmentação ainda tem limitações com regiões claras e iluminação variável; não se afirma que todos os defeitos são preservados ou detectados.
+O lote foi executado em uma pasta temporária, sem sobrescrever resultados existentes e sem exibir imagens. A conferência do Git confirmou apenas os arquivos `.gitkeep` nas pastas de dados versionadas.
+
+Essa verificação atesta o funcionamento do pipeline, não a qualidade visual dos resultados, avaliada separadamente por amostragem.
+
+## Decisões técnicas
+
+**Padronização antes dos filtros.** O redimensionamento ocorre logo após a leitura, e não ao final. Assim, os filtros operam sempre nas dimensões configuradas e não é necessário reamostrar as máscaras e bordas binárias ao final. Isso não garante resultados idênticos entre câmeras, escalas ou enquadramentos diferentes.
+
+**Leitura restrita a 8 bits em canal único.** O lote usa `cv2.IMREAD_GRAYSCALE` para fornecer um formato consistente e compatível com os filtros e o Canny. Isso converte entradas de maior profundidade para 8 bits, sem preservar toda sua faixa original. Consulte a [documentação de limiarização](https://docs.opencv.org/4.11.0/d7/d1b/group__imgproc__misc.html) e a [documentação do Canny](https://docs.opencv.org/4.11.0/dd/d1a/group__imgproc__feature.html).
+
+**Saídas separadas, não combinadas.** A operação OR deixa bordas brancas indistinguíveis onde a máscara já é branca. Na revisão de duas amostras da primeira versão, aproximadamente metade dos pixels de Canny ficava encoberta dessa forma. A separação elimina essa sobreposição, mas não comprova que todos os defeitos sejam preservados.
+
+**O cinza padronizado é candidato a entrada de treino.** Ele não é binarizado e preserva tons intermediários, embora o redimensionamento possa remover detalhes pequenos. Essa saída é salva antes do Gaussian Blur. Segmentação e bordas são representações auxiliares; sua utilidade para um modelo deverá ser avaliada na etapa de modelagem.
+
+**Otsu e Gaussiano.** O Otsu calcula automaticamente um limiar global a partir do histograma, mas não corrige iluminação desigual. O filtro Gaussiano reduz variações locais; abertura e fechamento refinam a máscara, podendo também remover pequenos detalhes.
+
+## Limitações e próximos passos
+
+A máscara de Otsu pode confundir regiões claras da peça com o fundo e não é uma delimitação perfeita do objeto. O mapa de bordas não distingue uma ranhura de um defeito real. Os parâmetros são valores padrão utilizados na validação, não uma calibração ótima demonstrada. Outra câmera ou iluminação pode exigir ajustes. As classes representam aproximadamente 60% `def_front` e 40% `ok_front`; na futura modelagem, precisão, revocação e matriz de confusão devem complementar a acurácia. Os custos de falsos positivos e negativos deverão ser definidos com a aplicação industrial.
+
+Como evolução: correção de iluminação, equalização adaptativa de contraste (CLAHE), configuração por arquivo e avaliação quantitativa contra um conjunto anotado.
 
 ## Organização em sprints
 
-O acompanhamento detalhado, incluindo as pendências da entrega, está em [PLANEJAMENTO.md](PLANEJAMENTO.md).
+Acompanhamento detalhado, incluindo pendências, em [PLANEJAMENTO.md](PLANEJAMENTO.md).
 
-- **Sprint 1 — Configuração:** repositório Git, branch `development`, ambiente virtual e seleção do dataset.
-- **Sprint 2 — Dados:** pastas de entrada e saída e leitura recursiva em lote.
-- **Sprint 3 — Pipeline base:** escala de cinza e filtro Gaussiano.
-- **Sprint 4 — Características:** Otsu e Canny.
-- **Sprint 5 — Refinamento:** abertura, fechamento e padronização em 256 × 256.
-- **Sprint 6 — Entrega:** gravação dos resultados, testes, documentação e apresentação.
+| Sprint | Entrega |
+|---|---|
+| 1 — Configuração | repositório Git, branch `development`, ambiente virtual e seleção do dataset |
+| 2 — Dados | pastas de entrada e saída, leitura recursiva em lote |
+| 3 — Pipeline base | escala de cinza e filtro Gaussiano |
+| 4 — Características | limiarização de Otsu e detecção de bordas com Canny |
+| 5 — Refinamento | abertura, fechamento e padronização em 256 × 256 |
+| 6 — Entrega | gravação dos resultados, testes, documentação e apresentação |
 
 ## Estratégia de branches
 
-- `main`: versão estável, pronta para entrega;
-- `development`: integração e validação das funcionalidades durante o desenvolvimento.
+- `main` — versão estável, pronta para entrega;
+- `development` — integração e validação das funcionalidades durante o desenvolvimento.
 
-Em um projeto maior, branches curtas de funcionalidade poderiam partir de `development`, como `feature/batch-processing` e `feature/image-filters`. Para este mini-projeto, uma única branch de integração mantém o histórico simples.
+Cada conjunto de alterações foi integrado por pull request de `development` para `main`, o que mantém o histórico legível e permite revisar o que entrou em cada etapa. Em um projeto de equipe, branches curtas de funcionalidade partiriam de `development` — como `feature/batch-processing` ou `feature/image-filters` — e seriam removidas após o merge.
 
-## Decisões técnicas e limitações
+## Privacidade da execução
 
-O Otsu foi escolhido por determinar automaticamente o limiar a partir do histograma. O filtro Gaussiano reduz variações antes da segmentação, e as operações morfológicas limpam a máscara. O Canny gera um mapa independente de contornos que podem representar ranhuras ou descontinuidades. Ele é aplicado na resolução final para evitar descartar linhas finas ao redimensionar um mapa binário.
-
-Como iluminação, contraste e escala variam, os parâmetros ideais podem mudar entre lotes. A máscara de Otsu pode confundir regiões claras da peça com o fundo; ela não é uma delimitação perfeita do objeto. O mapa de bordas separado evita o encobrimento pela máscara, mas não identifica se uma borda corresponde realmente a um defeito. Melhorias futuras incluem correção de iluminação, equalização adaptativa de contraste (CLAHE), configuração por arquivo e avaliação quantitativa com um conjunto anotado.
+O programa não abre janelas, não exibe imagens no terminal e não incorpora imagens ao código ou à documentação. As imagens transformadas ficam apenas no diretório local `processed_images/`, já que esse salvamento é requisito da atividade. Falhas são registradas **com o nome do arquivo**, porque um aviso anônimo em um lote de mais de mil imagens impediria localizar o arquivo problemático. Quem receber apenas o repositório terá o código, nunca as imagens.
 
 ## Licença
 
-O código deste repositório está sob a licença [MIT](LICENSE), uma das licenças
-permissivas mais difundidas em software livre. Em termos práticos:
+O código deste projeto está sob a licença [MIT](license). O arquivo contém o texto integral da licença e o aviso de copyright de 2026 de Francesco Cristiano Cousseau. Texto de referência: [Open Source Initiative](https://opensource.org/license/mit).
 
-| | |
-|---|---|
-| **Permitido** | usar, copiar, modificar, integrar a outro projeto, distribuir, sublicenciar e utilizar comercialmente |
-| **Exigido** | manter o aviso de copyright e o texto da licença em cópias ou partes substanciais do código |
-| **Não oferecido** | qualquer garantia — o software é fornecido "como está", e o autor não responde por danos decorrentes do uso |
+As imagens têm licença própria, indicada pelo autor no [Kaggle](https://www.kaggle.com/datasets/ravirajsinh45/real-life-industrial-dataset-of-casting-product) como CC BY-NC-ND 4.0. Uma licença do código não altera os termos dos dados. Nenhuma imagem original ou processada é incluída no repositório.
 
-A escolha é deliberada. Trata-se de um projeto acadêmico cujo valor está em ser
-lido, reaproveitado e adaptado; a licença MIT remove barreiras a isso e exige
-apenas a atribuição. Diferentemente de licenças recíprocas como a GPL, ela não
-obriga quem derivar deste código a adotar a mesma licença.
+---
 
-**A licença cobre apenas o código.** As imagens do dataset têm licença própria,
-mais restritiva, descrita na seção [Dataset](#dataset) — e por isso não são
-redistribuídas aqui. A permissão de uso comercial concedida pela MIT vale para
-o pipeline, não para os dados processados com ele.
+Francesco Cristiano Cousseau · Machine Learning e Visão Computacional (T2) · 2026

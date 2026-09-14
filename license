@@ -1,20 +1,21 @@
-## Licença
+MIT License
 
-O código deste repositório está sob a licença [MIT](LICENSE), uma das licenças
-permissivas mais difundidas em software livre. Em termos práticos:
+Copyright (c) 2026 Francesco Cristiano Cousseau
 
-| | |
-|---|---|
-| **Permitido** | usar, copiar, modificar, integrar a outro projeto, distribuir, sublicenciar e utilizar comercialmente |
-| **Exigido** | manter o aviso de copyright e o texto da licença em cópias ou partes substanciais do código |
-| **Não oferecido** | qualquer garantia — o software é fornecido "como está", e o autor não responde por danos decorrentes do uso |
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-A escolha é deliberada. Trata-se de um projeto acadêmico cujo valor está em ser
-lido, reaproveitado e adaptado; a licença MIT remove barreiras a isso e exige
-apenas a atribuição. Diferentemente de licenças recíprocas como a GPL, ela não
-obriga quem derivar deste código a adotar a mesma licença.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-**A licença cobre apenas o código.** As imagens do dataset têm licença própria,
-mais restritiva, descrita na seção [Dataset](#dataset) — e por isso não são
-redistribuídas aqui. A permissão de uso comercial concedida pela MIT vale para
-o pipeline, não para os dados processados com ele.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
