@@ -6,6 +6,19 @@
 
 Mini-projeto de Machine Learning e Visão Computacional. O sistema prepara, em lote, imagens de peças metálicas fundidas para um futuro modelo de classificação de qualidade. Ele **não classifica defeitos**: reduz ruído, segmenta a peça e evidencia contornos e possíveis irregularidades, entregando dados padronizados para a etapa de modelagem.
 
+## English summary
+
+A batch pre-processing pipeline for images of cast metal parts (pump impellers), prepared for a future quality-classification model. **It does not classify defects.** For each input image it produces three 256 × 256 PNG outputs: standardized grayscale, a binary segmentation mask (Gaussian blur, Otsu threshold, morphological opening and closing) and a Canny edge map.
+
+- **Engineering:** CLI (`python -m src.pipeline`), configurable parameters, folder structure preserved, 8 automated `pytest` tests on synthetic images.
+- **Validation (14/09/2026):** 1,300 images processed with 0 read, processing or write failures, producing 3,900 PNG files. This shows the pipeline works, not that the results are visually optimal.
+- **Data:** the public *Casting Product Image Data for Quality Inspection* dataset (CC BY-NC-ND 4.0). No image is versioned in this repository. The code is MIT-licensed.
+- **Limitations:** Otsu can confuse bright regions of the part with the background; edges do not distinguish a groove from a real defect; parameters are defaults, not a tuned optimum.
+
+*The full documentation below is in Portuguese.*
+
+---
+
 ## Objetivo e fluxo do sistema
 
 Para cada imagem de entrada, o pipeline aplica:
